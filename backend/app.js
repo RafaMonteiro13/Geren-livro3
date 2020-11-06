@@ -1,6 +1,33 @@
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
+const Livro = require('./models/livro');
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb+srv://user:123456@cluster0.toqy2.mongodb.net/app-mean?retryWrites=true&w=majority')
+.then(() => {
+  console.log ("Conexão OK")
+  }).catch(() => {
+  console.log("Conexão N rolou")
+  });
+
+app.post('/api/livros',(req,res,next)=>{
+  const livro = new Livro({
+nome:req.body.nome,
+autor:req.body.autor,
+paginas:req.body.paginas
+  })
+  console.log(livro);
+  res.status(201).json({mensagem: 'Livro inserido com sucesso'})
+});
+app.get('/api/livros',(req,res,next)=>{
+  Livro.find(then(documents =>{
+    res.status(200).json({
+      mensagem: "Tudo , Oka",
+      livros: documents
+    });
+  }))
+});
 
 const livros = [
   {
