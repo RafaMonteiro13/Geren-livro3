@@ -1,68 +1,91 @@
+  
 const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
-const Livro = require('./models/livro');
 const mongoose = require('mongoose');
-
-mongoose.connect('mongodb+srv://user:123456@cluster0.toqy2.mongodb.net/app-mean?retryWrites=true&w=majority')
-.then(() => {
-  console.log ("Conexão OK")
-  }).catch(() => {
-  console.log("Conexão N rolou")
-  });
-
-app.post('/api/livros',(req,res,next)=>{
-  const livro = new Livro({
-nome:req.body.nome,
-autor:req.body.autor,
-paginas:req.body.paginas
-  })
-  console.log(livro);
-  res.status(201).json({mensagem: 'Livro inserido com sucesso'})
-});
-app.get('/api/livros',(req,res,next)=>{
-  Livro.find(then(documents =>{
-    res.status(200).json({
-      mensagem: "Tudo , Oka",
-      livros: documents
-    });
-  }))
-});
+const Livro = require('./models/livro');
 
 const livros = [
-  {
-    id: '1',
-    nome: 'Senhor dos aneis',
-    autor: 'tolkien',
-    paginas: 578
-  },
-  {
-    id: '2',
-    nome: 'Harry porter',
-    autor: 'não sei',
-    paginas: 345
-  }
 ]
 
+mongoose.connect('mongodb+srv://lucas:nw9i8Dmd10dHRXdz@cluster0.5m8t5.mongodb.net/livro?retryWrites=true&w=majority',{ useNewUrlParser: true, useUnifiedTopology: true})
+.then(() => {
+  console.log("Conexão OK")
+}).catch(() => {
+  console.log('Conexão não está funcionando!')
+})
 app.use(bodyParser.json());
 
 app.use ((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', "*");
   res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type,Accept');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, DELETE, OPTIONS');
   next();
   });
 
-app.post('/api/livros',(req, res, next) =>{
+app.post('/api/livros', (req, res, next) => {
+  const livro = new Livro({
+    nome: req.body.nome,
+    autor: req.body.autor,
+    paginas: req.body.paginas
+  })
+  livro.save()
+  .then(livroInserido => {
+    res.status(201).json({
+      mensagem: 'Livro inserido',
+      id: livroInserido._id
+    })
+  })
 
+});
+
+app.get('/api/livro', (req, res, next) => {
+  Livro.find().then(documents => {
+    console.log(documents)
+    res.status(200).json({
+      mensagem: "Tudo Ok",
+      livros: documents
+    })
+  })
 })
 
-app.use('/api/livros',(req,res, next) => {
+app.use('/api/livro',(req,res, next) => {
   res.status(200).json({
     mensagem: "Tudo OK",
-    clientes: clientes
+    livros: livros
     });
 });
 
-module.exports = app;
+app.delete('/api/livros/:id', (req, res, next) => {
+  Livro.deleteOne({_id: req.params.id}).then((resultado) => {
+    console.log(resultado);
+    res.status(200).json({mensagem: "Livro removido"})
+  });
+});
 
+app.put("/api/livros/:id", (req, res, next) => {
+  const livro = Livro({
+    _id: req.params.id,
+    nome: req.body.nome,
+    autor: req.body.autor,
+    paginas: req.body.paginas
+  });
+  Livro.updateOne({_id: req.params.id}, livro)
+  .then((resultado) => {
+    console.log(resultado)
+  });
+  res.status(200).json({mensagem: 'Atualização realizada com sucesso!'})
+});
+
+app.get('/api/livros/:id', (req, res, next) => {
+  Livro.findById(req.params.id).then(liv => {
+    if(liv) {
+      res.status(200).json(liv);
+    }
+    else {
+      res.status(404).json({mensagem: "Livro não encontrado!"})
+    }
+  })
+});
+
+module.exports = app;

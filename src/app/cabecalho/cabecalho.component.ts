@@ -5,6 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './cabecalho.component.html',
   styles: [
   ]
+
 })
 export class CabecalhoComponent implements OnInit {
 
